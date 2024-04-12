@@ -10,6 +10,7 @@ namespace Inventory
         public int OwnerId { get; }
 
         public int GetAmount(int itemId);
+        public int GetCapacity(int itemId);
         public bool Has(int itemId, int amount);
     }
 }
