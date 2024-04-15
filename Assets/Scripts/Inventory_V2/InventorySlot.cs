@@ -27,7 +27,7 @@ namespace Inventory
             get => Data.Amount;
             set
             {
-                if (Data.Amount != value && value > 0)
+                if (Data.Amount != value && value >= 0)
                 {
                     Data.Amount = value;
                     ItemAmountChanged?.Invoke(value);

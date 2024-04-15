@@ -9,6 +9,7 @@ namespace Inventory
 
         public int ItemId { get; }
         public int Amount { get; }
+        public int Capacity { get; }
         public bool IsEmpty { get; }
     }
 }

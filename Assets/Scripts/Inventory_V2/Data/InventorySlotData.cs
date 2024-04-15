@@ -7,6 +7,6 @@ namespace Inventory
     {
         public int ItemId;          // private ??
         public int Amount;          // private ??
-        public int Capacity;
+        public int Capacity = 100;
     }
 }

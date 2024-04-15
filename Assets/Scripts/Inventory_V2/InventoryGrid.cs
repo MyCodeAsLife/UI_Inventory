@@ -7,7 +7,7 @@ namespace Inventory
     public class InventoryGrid : IReadOnlyInventoryGrid
     {
         private readonly InventoryGridData Data;
-        private readonly Dictionary<Vector2Int, InventorySlot> SlotsMap = new();        //+ ћожно заменить на обычный двумерный массив
+        private readonly Dictionary<Vector2Int, InventorySlot> SlotsMap;        //+ ћожно заменить на обычный двумерный массив
 
         public event Action<int, int> ItemAdded;
         public event Action<int, int> ItemRemoved;
@@ -30,6 +30,7 @@ namespace Inventory
         public InventoryGrid(InventoryGridData data)
         {
             Data = data;
+            SlotsMap = new();
 
             for (int i = 0; i < Size.x; i++)
             {
@@ -61,11 +62,6 @@ namespace Inventory
             return array;
         }
 
-        public bool Has(int itemId, int amount)                 ///
-        {
-            throw new NotImplementedException();
-        }
-
         // —юда добавить методы на изменение есмкости €чеек\слотов\стаков ???
 
         public AddItemsToInventoryGridResult AddItems(int itemId, int amount)
@@ -77,7 +73,7 @@ namespace Inventory
                 return new AddItemsToInventoryGridResult(OwnerId, amount, itemsAddedToSlotsWithSameItemsAmount);
 
             int itemsAddedToAvailableSlotsAmount = AddToFirstAvailableSlots(itemId, remainingAmount, out remainingAmount);
-            int totalAddedItemsAmount = itemsAddedToSlotsWithSameItemsAmount + itemsAddedToSlotsWithSameItemsAmount;
+            int totalAddedItemsAmount = itemsAddedToAvailableSlotsAmount + itemsAddedToSlotsWithSameItemsAmount;
 
             return new AddItemsToInventoryGridResult(OwnerId, amount, totalAddedItemsAmount);
         }
@@ -116,7 +112,35 @@ namespace Inventory
 
         public RemoveItemsFromInventoryGridResult RemoveItems(int itemId, int amount)                 /// ќстановилс€ здесь---------------------------
         {
-            throw new NotImplementedException();
+            if (Has(itemId, amount) == false)
+                return new RemoveItemsFromInventoryGridResult(OwnerId, amount, false);
+
+            var amountToRemove = amount;
+
+            for (int i = 0; i < Size.x; ++i)
+            {
+                for (int j = 0; j < Size.y; ++j)
+                {
+                    var slotCoords = new Vector2Int(i, j);  //+
+                    var slot = SlotsMap[slotCoords];        //+
+
+                    if (slot.ItemId != itemId)
+                        continue;
+
+                    if (amountToRemove > slot.Amount)
+                    {
+                        amountToRemove -= slot.Amount;
+                        RemoveItems(slotCoords, itemId, slot.Amount);          //++ Ќе проще ли передать сразу ссылку слот, чем передавать структуру slotCoords?
+                    }
+                    else
+                    {
+                        RemoveItems(slotCoords, itemId, amountToRemove);       //++ Ќе проще ли передать сразу ссылку слот, чем передавать структуру slotCoords?
+                        return new RemoveItemsFromInventoryGridResult(OwnerId, amount, true);
+                    }
+                }
+            }
+
+            throw new Exception("Something went wrong, couldn't remove some items.");
         }
 
         public RemoveItemsFromInventoryGridResult RemoveItems(Vector2Int slotCoords, int itemId, int amount)
@@ -134,26 +158,61 @@ namespace Inventory
             return new RemoveItemsFromInventoryGridResult(OwnerId, amount, true);
         }
 
-        public int GetAmount(int itemId)                        /// ƒобавл€ть проверку на -1 в методы обращающиес€ сюда
-        {
-            if (GetItemSlotPosition(itemId, out Vector2Int position))
-                return SlotsMap[position].Amount;
+        //public int GetAmount(int itemId)                        /// ƒобавл€ть проверку на -1 в методы обращающиес€ сюда
+        //{
+        //    if (GetItemSlotPosition(itemId, out Vector2Int position))
+        //        return SlotsMap[position].Amount;
+        //    return -1;
+        //}
+        //public int GetCapacity(int itemId)                      // ƒобавл€ть проверку на -1 в методы обращающиес€ сюда
+        //{
+        //    if (GetItemSlotPosition(itemId, out Vector2Int position))
+        //        return SlotsMap[position].Capacity;
+        //    return -1;
+        //} 
+        //private bool GetItemSlotPosition(int itemId, out Vector2Int resultPosition)
+        //{
+        //    resultPosition = default(Vector2Int);
+        //    for (int i = 0; i < Data.Size.x; i++)
+        //    {
+        //        for (int j = 0; j < Data.Size.y; j++)
+        //        {
+        //            Vector2Int position = new Vector2Int(i, j);
+        //            if (SlotsMap[position].ItemId == itemId)
+        //            {
+        //                resultPosition = position;
+        //                return true;
+        //            }
+        //        }
+        //    }
+        //    return false;
+        //}
 
-            return -1;
+        public bool Has(int itemId, int amount) => GetAmount(itemId) >= amount;
+
+        public int GetAmount(int itemId)
+        {
+            int amount = 0;
+
+            //for (int i = 0; i < Size.x; ++i)
+            //{
+            //    for (int j = 0; j < Size.y; ++j)
+            //    {
+            //        Vector2Int position = new Vector2Int(i, j);
+            //        if (SlotsMap[position].ItemId == itemId)
+            //            amount += SlotsMap[position].Amount;
+            //    }
+            //}
+
+            foreach (var slot in Data.Slots)
+                if (slot.ItemId == itemId)
+                    amount += slot.Amount;
+
+            return amount;
         }
 
         public int GetCapacity(int itemId)                      // ƒобавл€ть проверку на -1 в методы обращающиес€ сюда
         {
-            if (GetItemSlotPosition(itemId, out Vector2Int position))
-                return SlotsMap[position].Capacity;
-
-            return -1;
-        }
-
-        private bool GetItemSlotPosition(int itemId, out Vector2Int resultPosition)
-        {
-            resultPosition = default(Vector2Int);
-
             for (int i = 0; i < Data.Size.x; i++)
             {
                 for (int j = 0; j < Data.Size.y; j++)
@@ -161,14 +220,36 @@ namespace Inventory
                     Vector2Int position = new Vector2Int(i, j);
 
                     if (SlotsMap[position].ItemId == itemId)
-                    {
-                        resultPosition = position;
-                        return true;
-                    }
+                        return SlotsMap[position].Capacity;
                 }
             }
 
-            return false;
+            return -1;
+        }
+
+        public void SwitchSLots(Vector2Int slotCoordsA, Vector2Int slotCoordsB)
+        {
+            // ѕроверить работоспособность данного варианта
+            //var temp = SlotsMap[slotCoordsA];
+            //SlotsMap[slotCoordsA] = SlotsMap[slotCoordsB];
+            //SlotsMap[slotCoordsB] = temp;
+
+            var slotA = SlotsMap[slotCoordsA];
+            var slotB = SlotsMap[slotCoordsB];
+            int tempSlotItemId = slotA.ItemId;
+            int tempSlotItemAmount = slotA.ItemId;
+            slotA.ItemId = slotB.ItemId;
+            slotA.Amount = slotB.Amount;
+            slotB.ItemId = tempSlotItemId;
+            slotB.Amount = tempSlotItemAmount;
+        }
+
+        public void SetSize(Vector2Int newSize)     // »зменение размеров инвентар€ - изменение кол-ва €чеек/слотов инвентар€
+        {
+            // —оздаем новый пустой инвентарь указанного размера
+            // ѕерекладываем айтемы из старого инвентар€ в новый
+            // ќбрабатываем ситуацию когда в новом инвентаре меньше €чеек чем было в старом, и все айтемы не влазиют
+            throw new NotImplementedException();
         }
 
         private int AddToSlotsWithSameItems(int itemId, int amount, out int remainingAmount)
