@@ -17,21 +17,6 @@ namespace Inventory
             var inventory = _inventoryService.RegisterInventory(inventoryData);
             _view.Setup(inventory);
 
-            // Заполнить Slots (все упирается в нулевой capacity, так как он нигде не заполняется)
-            // ID у всех одинаковый потому как capacity не вмещяет ничего и первый предмет просто занимает все слоты.
-            // Добавить capacity при добавлении предмета
-            //int count = 0;
-            //for (int i = 0; i < inventory.Size.x; i++)
-            //{
-            //    for (int j = 0; j < inventory.Size.y; j++)
-            //    {
-            //        var position = new Vector2Int(i, j);
-            //        inventory.AddItems(position, count, count + i);
-            //        count++;
-            //    }
-            //}
-
-
             var addedResult = _inventoryService.AddItemsToInventory(ownerId, 2211, 15);
             Debug.Log($"Items added. ItemId: 2211, amount to add: 15, amount added: {addedResult.ItemsAddedAmount}");
 
@@ -62,23 +47,23 @@ namespace Inventory
             _view.Print();
         }
 
-        private InventoryGridData CreateTestInventory(int ownerId)
+        private InventoryGridData CreateTestInventory(int ownerId)      // Тестовое создание инвентаря
         {
-            var size = new Vector2Int(3, 4);
+            var size = new Vector2Int(3, 4);                            // Размер инвентаря
             var createdInventorySlots = new List<InventorySlotData>();
-            int length = size.x * size.y;
+            int length = size.x * size.y;   //+
 
             for (int i = 0; i < length; i++)
-                createdInventorySlots.Add(new InventorySlotData());
+                createdInventorySlots.Add(new InventorySlotData());     // Создание пустых слотов
 
-            var createdInventoryData = new InventoryGridData
+            var createdInventoryData = new InventoryGridData            // Создание Инвентаря
             {
-                OwnerId = ownerId,
-                Size = size,
-                Slots = createdInventorySlots,
+                OwnerId = ownerId,                                      // ID Инвентаря
+                Size = size,                                            // Размер инвентаря
+                Slots = createdInventorySlots,                          // Созданные выше пустые слоты для инвентаря
             };
 
-            return createdInventoryData;
+            return createdInventoryData;                                // Возвращаем созданный инвентарь
         }
     }
 }

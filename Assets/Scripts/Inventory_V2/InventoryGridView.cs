@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Inventory
 {
-    public class InventoryGridView : MonoBehaviour
+    public class InventoryGridView : MonoBehaviour      // Ненужный класс? удалить
     {
         private IReadOnlyInventoryGrid _inventory;
         // Можно получить ссылку на префаб
