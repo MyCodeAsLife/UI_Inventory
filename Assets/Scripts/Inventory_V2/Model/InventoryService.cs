@@ -3,9 +3,17 @@ using UnityEngine;
 
 namespace Inventory
 {
-    public class InventoryService       // Слой абстрации позволяющий хранить много инвентарей
+    // Слой абстрации позволяющий хранить много инвентарей
+    // Здесь происходит сохранение при изменении состояния инвентаря
+    public class InventoryService  
     {
         private readonly Dictionary<int, InventoryGrid> InventoriesMap = new();
+        private readonly IGameStateSaver GameStateSaver;
+
+        public InventoryService(IGameStateSaver gameStateSaver)
+        {
+            GameStateSaver = gameStateSaver;
+        }
 
         public InventoryGrid RegisterInventory(InventoryGridData inventoryData)     // Зачем вовращать inventory?
         {
@@ -18,25 +26,37 @@ namespace Inventory
         public AddItemsToInventoryGridResult AddItemsToInventory(int ownerId, int itemId, int amount = 1)
         {
             var inventory = InventoriesMap[ownerId];       //+
-            return inventory.AddItems(itemId, amount);
+            var result = inventory.AddItems(itemId, amount);
+            GameStateSaver.SaveGameState();
+
+            return result;
         }
 
         public AddItemsToInventoryGridResult AddItemsToInventory(int ownerId, Vector2Int slotCoords, int itemId, int amount = 1)
         {
             var inventory = InventoriesMap[ownerId];       //+
-            return inventory.AddItems(slotCoords, itemId, amount);
+            var result = inventory.AddItems(slotCoords, itemId, amount);
+            GameStateSaver.SaveGameState();
+
+            return result;
         }
 
         public RemoveItemsFromInventoryGridResult RemoveItems(int ownerId, int itemId, int amount = 1)
         {
             var inventory = InventoriesMap[ownerId];    //+
-            return inventory.RemoveItems(itemId, amount);
+            var result = inventory.RemoveItems(itemId, amount);
+            GameStateSaver.SaveGameState();
+
+            return result;
         }
 
         public RemoveItemsFromInventoryGridResult RemoveItemsFromSlot(int ownerId, Vector2Int slotCoords, int itemId, int amount = 1)
         {
             var inventory = InventoriesMap[ownerId];       //+
-            return inventory.RemoveItems(slotCoords, itemId, amount);
+            var result = inventory.RemoveItems(slotCoords, itemId, amount);
+            GameStateSaver.SaveGameState();
+
+            return result;
         }
 
         public IReadOnlyInventoryGrid GetInventory(int ownerId)

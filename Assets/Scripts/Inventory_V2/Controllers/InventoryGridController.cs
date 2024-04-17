@@ -4,7 +4,7 @@ namespace Inventory
 {
     public class InventoryGridController
     {
-        private List<InventorySlotController> _slotControllers = new();
+        private readonly List<InventorySlotController> SlotControllers = new();
 
         public InventoryGridController(IReadOnlyInventoryGrid inventory, InventoryView view)
         {
@@ -19,9 +19,9 @@ namespace Inventory
                     int index = i * lineLength + j;   //+
                     var slotView = view.GetInventorySlotView(index);    //+
                     var slot = slots[i, j]; //+
-                    _slotControllers.Add(new InventorySlotController(slot, slotView));
+                    SlotControllers.Add(new InventorySlotController(slot, slotView));
                 }
-            }                                               // Здесь------------------------------------
+            }
         }
     }
 }

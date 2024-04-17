@@ -158,51 +158,11 @@ namespace Inventory
             return new RemoveItemsFromInventoryGridResult(OwnerId, amount, true);
         }
 
-        //public int GetAmount(int itemId)                        /// ƒобавл€ть проверку на -1 в методы обращающиес€ сюда
-        //{
-        //    if (GetItemSlotPosition(itemId, out Vector2Int position))
-        //        return SlotsMap[position].Amount;
-        //    return -1;
-        //}
-        //public int GetCapacity(int itemId)                      // ƒобавл€ть проверку на -1 в методы обращающиес€ сюда
-        //{
-        //    if (GetItemSlotPosition(itemId, out Vector2Int position))
-        //        return SlotsMap[position].Capacity;
-        //    return -1;
-        //} 
-        //private bool GetItemSlotPosition(int itemId, out Vector2Int resultPosition)
-        //{
-        //    resultPosition = default(Vector2Int);
-        //    for (int i = 0; i < Data.Size.x; i++)
-        //    {
-        //        for (int j = 0; j < Data.Size.y; j++)
-        //        {
-        //            Vector2Int position = new Vector2Int(i, j);
-        //            if (SlotsMap[position].ItemId == itemId)
-        //            {
-        //                resultPosition = position;
-        //                return true;
-        //            }
-        //        }
-        //    }
-        //    return false;
-        //}
-
         public bool Has(int itemId, int amount) => GetAmount(itemId) >= amount;
 
         public int GetAmount(int itemId)
         {
             int amount = 0;
-
-            //for (int i = 0; i < Size.x; ++i)
-            //{
-            //    for (int j = 0; j < Size.y; ++j)
-            //    {
-            //        Vector2Int position = new Vector2Int(i, j);
-            //        if (SlotsMap[position].ItemId == itemId)
-            //            amount += SlotsMap[position].Amount;
-            //    }
-            //}
 
             foreach (var slot in Data.Slots)
                 if (slot.ItemId == itemId)
